@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <ctime>
 #include <ctype.h>
+#include "splashes.h"
 
 using namespace std;
 
@@ -12,6 +13,11 @@ using namespace std;
 //it catches if you enter in a wrong number but there's nothing there if you enter in a letter
 
 //implement a high score thing
+
+//splashes
+void title ();
+void crit_hit();
+void new_sword();
 
 void shop_keep(int &coins, int &potions, int &damage_up, int &temp_sword) {
     //potions and other stuff you can buy in the store
@@ -44,6 +50,7 @@ void shop_keep(int &coins, int &potions, int &damage_up, int &temp_sword) {
                 cout << "\nYOU CAN'T AFFORD THAT SHIT!\n\n";
                 continue;
             }
+            cout << "\nGood ass choice\nYou bought a damage up potion\n";
             damage_up += 1;
             coins -= damage_up_price;
         }
@@ -52,6 +59,7 @@ void shop_keep(int &coins, int &potions, int &damage_up, int &temp_sword) {
                 cout << "\nYOU CAN'T AFFORD THAT SHIT!\n\n";
                 continue;
             }
+            cout << "\nGood ass choice\nYou bought a life up potion\n";
             potions += 1;
             coins -= life_up_price;
         }
@@ -60,6 +68,7 @@ void shop_keep(int &coins, int &potions, int &damage_up, int &temp_sword) {
                 cout << "\nYOU CAN'T AFFORD THAT SHIT!\n\n";
                 continue;
             }
+            cout << "\nWHOA! You've got so much gold! I bet you get hella head\nYou bought an awesome-er sword!!\n";            
             temp_sword += 1;
             coins -= better_sword_price;
         }
@@ -72,25 +81,27 @@ void shop_keep(int &coins, int &potions, int &damage_up, int &temp_sword) {
 
 int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
 
-    int potions = 5;        //number of health potions you have (maybe add different sizes)
-    int damage_up = 5;      //number of damage up potions you have
-    int health = 100;             //health of player
-    int max_health = health;         //max health of player
-    int coins = 0;          //how many coins the player has
+    int potions = 5;                //number of health potions you have (maybe add different sizes)
+    int damage_up = 5;              //number of damage up potions you have
+    int health = 100;               //health of player
+    int max_health = health;        //max health of player
+    int coins = 0;                  //how many coins the player has
+    int overall_coins = 0;          //coin count at the end of the game
 
-    int bad_health;         //health of bad guy
-    int attack = 5;             //attack of player
-    int extra_attack = 0;        //attack when used a damage_up
-    int bad_attack;         //attack of bad guy
-    bool gametime = true;   //while true, game is playing (loop is staying active)
-    bool wannaplay = true;  //asking player to play again at the end of the game
-    int killed = 0;         //how many monsters you killed
+    int bad_health;                 //health of bad guy
+    int attack = 5;                 //attack of player
+    int extra_attack = 0;           //attack when used a damage_up
+    int bad_attack;                 //attack of bad guy
+    bool gametime = true;           //while true, game is playing (loop is staying active)
+    bool wannaplay = true;          //asking player to play again at the end of the game
+    int killed = 0;                 //how many monsters you killed
 
-    int dungeon_diff = 1;   //level of difficulty in dungeon
+    int dungeon_diff = 1;           //level of difficulty in dungeon (goes down after each enemy is killed)
     int temp_dd = dungeon_diff;     //temporal variable for dungeon difficulty
     int dung_count = 0;             //number of dungeons you completed
 
     string choose;
+    title();            //splashes title card
     cout << "Would you like to explore some cave and maybe get some cool stuff or something? (Y/N)\n";
     cin >> choose;          //if player types y or Y then game starts, if n or N, then game ends
     while (gametime) {      //this loops the game for infinity until you die or something
@@ -107,7 +118,7 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                 wannaplay = false;
             }
             else {
-                cout << "Man you entered the wrong thing. Try N or Y\n";
+                cout << "Man you entered the wrong thing. Try N for no or Y for yes\n";
                 cin >> choose;
             }
         }
@@ -161,13 +172,16 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
 
         while (leave_game != 0) {
             while (health > 0 && leave != 0 && leave_game == 2 && dungeon_diff != 0) {                  //loop goes back to here to allow player and monster to attack
+                cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+                cout << "\nMonsters remaining in dungeon --> " << dungeon_diff - 1 << endl;
+                cout << "Coins --> " << coins << endl;
                 cout << "\nHealth --> " << health << endl;                                                  //this is the whole game portion....do not mess with it
                 cout << "Enemy health --> " << bad_health << endl;                                          //because this works
                 cout << "\nWould you like to...\n";
                 cout << "1. Use Potion ( " << potions << " ) \n";
                 cout << "2. Use Increase Attack Potion ( " << damage_up << " ) \n";
                 cout << "3. Attack!\n";
-                cout << "4. Attempt to escape...like a bitch...\n";
+                cout << "4. Attempt to escape...like a bitch...(50/50 chance)\n";
                 cin >> decision;
                 switch (decision) {
                     case 1:                 //potion (if 0 potions, go back to choosing)
@@ -200,7 +214,7 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                         cout << "\nYOU GONNA SMACK DOWN!\n";
                         randomNum = rand() % 4 + 1;
                         if (randomNum == 4) {                               //if the randomNum is 4, then it's a critical hit
-                            cout << "CRITICAL HIT!\n";
+                            crit_hit();
                             attack = attack * 2;                            //critical hit is attack * 2
                             cout << "You hit the monster for " << attack + extra_attack << endl;
                             bad_health = bad_health - attack - extra_attack;
@@ -221,17 +235,19 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                         if (randomNum == 2) {
                             cout << "Yay! You get to escape with your tail between your legs...\n";
                             leave = 0;
-                            continue;
+                            leave_game = 4;     //random number that's not 0-2
+                            continue;       //goes back to the top to say that leave is now 0 and ends the whole thing
                         }
                         else {
-                            cout << "The monster's gaze is sexual so you're too scared to leave\n";
+                            cout << "The monster's gaze is sexual so you're too tranced to leave\n";
+                            cout << "Fuckin simp ass bitch\n";
                         }
                         break;
                     default:            //error input
-                        cout << "Enter an actual word dumbass\n";
+                        cout << "Enter a number between 1-4\n";
                         continue;
                 }
-                if (bad_health > 0) {                       //skip if leave is 0
+                if (bad_health > 0) {               //skips whole interaction if leave is 0
                     randomNum = rand() % 6 + 1;
                     if (randomNum == 6) {
                         cout << "MONSTER CRITICAL HIT! D:\n";
@@ -239,10 +255,18 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                         cout << "Monster hits you for " << bad_attack << endl;
                         health = health - bad_attack;
                         bad_attack = bad_attack / 2;
+                        if (health <= 0) {
+                            leave_game = 0;
+                            continue;
+                        }
                     }
                     else {
                         cout << "Monster hits you for " << bad_attack << endl;
                         health = health - bad_attack;
+                        if (health <= 0) {
+                            leave_game = 0;
+                            continue;
+                        }
                     }
                 }  
                 else {
@@ -251,19 +275,24 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                     cout << "You've killed " << killed << " monster(s)!\n";
                     bad_health = temp_bad_health + 5;                               //health of monsters go up by 5
                     temp_bad_health = temp_bad_health + 5;
-                    randomNum = rand() % 10 + 1;
-                    coins += randomNum;                                             //random number of coins after each kill
+                    randomNum = rand() % 25 + 1;
+                    coins += randomNum;
+                    overall_coins += randomNum;                                     //random number of coins after each kill
                     cout << "You found " << randomNum << " coins!\n";
+                    randomNum = rand() % 10 + 1;                                    //random gen for getting items
                     if (randomNum > 0 && randomNum <= 2) {                          // 1/5 chance to find health potion
-                        cout << "You found a health potion!\n";
-                        potions = potions + 2;
+                        randomNum = rand() % 4 + 1;                                 //you get 1-4 damage potions
+                        potions += randomNum;
+                        cout << "You found " << randomNum << " health potion(s)!\n";
                     }
                     else if (randomNum >= 3 && randomNum < 5) {                     // 1/5 chance to find damage potion
-                        cout << "You found a damage potion!\n";
-                        damage_up = damage_up + 2;
+                        randomNum = rand() % 4 + 1;                                 //you get 1-4 potions
+                        damage_up += randomNum;
+                        cout << "You found " << randomNum << " damage potion(s)!\n";
                     }
                     else if (randomNum == 10) {                                     // 1/10 chance to get a better sword
-                        cout << "YOU FOUND A BETTER SWORD!!!\n";
+                        cout << "\tYOU FOUND A\n";
+                        new_sword();
                         attack = attack + 10;
                     }
                 } 
@@ -271,12 +300,19 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
 
             if (dungeon_diff == 0) {        //random coin at the end of each dungeon (not level)
                 cout << "Congrats! You've completed the dungeon! You found a ziplock bag full of coins!\n";
-                randomNum = rand() % 50 + 20;
+                randomNum = rand() % 100 + 20;
                 coins += randomNum;
+                overall_coins += randomNum;
+                sleep(1);
                 cout << "You found " << randomNum << " coins!\n";
+                potions += 1;
+                damage_up += 1;
+                sleep(1);
+                cout << "You got one potion\nYou got one damage potion\n";
                 temp_dd++;
                 dungeon_diff = temp_dd;
                 dung_count++;
+                sleep(1);
                 cout << "\nYou currently have " << coins << " coins\n";
                 cout << "0. Leave Game\n";
                 cout << "1. Pout to the shop keep with your broke ass!\n";
@@ -310,7 +346,7 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
                 cout << "\nYou now have " << coins << " coins\n";
                 cout << potions << " health potions\n";
                 cout << damage_up << " damage potions\n";
-                attack += (temp_sword * 5);
+                attack += (temp_sword * 10);
                 cout << "Your attack damage is now " << attack << endl;
             }
 
@@ -369,15 +405,35 @@ int main () {               //!!!!!!!!!!!!!!! MAIN GAME  !!!!!!!!!!!!!
         }           //end of game
 
         if (health <= 0) {
-            cout << "you died so bad so...sorry\n";
+            cout << "\nyou died so bad so...sorry\n";
             gametime = false;
         }
-        cout << "You killed " << killed << " monsters!\n";
-        cout << "you completed " << dung_count << " dungeons";
+        cout << "\nYou killed " << killed << " monsters!";
+        sleep(1);
+        cout << "\nYou completed " << dung_count << " dungeons";
+        sleep(1);
+        cout << "\nYou collected " << overall_coins << " coins\n";
         if (dung_count == 0) {
-            cout << "\noof dude ZERO dungeons? that's sad...you suck actually\n\t\tAND nobody likes you\n";
+            cout << "\nyou get absolutely no bitches...ZERO dungeons?...jeez man\n";
         }
-        cout << "...yeah...\n";
+        else if (dung_count > 0 && dung_count <= 2) {
+            cout << "\nThat's a pretty decent amount of dungeons...\n";
+            sleep(1);
+            cout << "\t\tyou still suck though\n";
+            cout << "yeah you do still suck...\n";
+        }
+        else if (dung_count > 2 && dung_count <= 4) {
+            cout << "\nNot half bad kid...not half bad....\n";
+            sleep(1);
+            cout << "\t\tbut still pretty bad right?\n";
+            cout << "yeaaah I suppose\n";
+        }
+        else {
+            cout << "\ndamn baby fuck me\n";
+            sleep(1);
+            cout << "\t\t0.0\n";
+            cout << "yeah I said it\n";
+        }
         sleep(2);
         cout << "\nBYE\n\n";
         gametime = false;
